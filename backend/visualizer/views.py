@@ -1,18 +1,29 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+
 import pandas as pd
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
+
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from django.http import FileResponse
 from io import BytesIO
+
 from .models import Dataset
 
+
+# =========================
+# CSV UPLOAD API
+# =========================
+@method_decorator(csrf_exempt, name="dispatch")
 class CSVUploadView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
-        file = request.FILES.get('file')
+        file = request.FILES.get("file")
 
         if not file:
             return Response(
@@ -37,26 +48,38 @@ class CSVUploadView(APIView):
 
         # keep only last 5 uploads
         if Dataset.objects.count() > 5:
-            Dataset.objects.order_by('uploaded_at').first().delete()
+            Dataset.objects.order_by("uploaded_at").first().delete()
 
         return Response(summary, status=status.HTTP_201_CREATED)
 
 
+# =========================
+# DATASET HISTORY API
+# =========================
 class DatasetHistoryView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
-        data = Dataset.objects.order_by('-uploaded_at')[:5]
+        data = Dataset.objects.order_by("-uploaded_at")[:5]
         response = [
             {
                 "filename": d.filename,
                 "uploaded_at": d.uploaded_at,
                 "summary": d.summary
-            } for d in data
+            }
+            for d in data
         ]
         return Response(response)
 
+
+# =========================
+# PDF REPORT API
+# =========================
 class PDFReportView(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request):
-        latest = Dataset.objects.order_by('-uploaded_at').first()
+        latest = Dataset.objects.order_by("-uploaded_at").first()
         if not latest:
             return Response({"error": "No data available"}, status=404)
 
@@ -79,9 +102,8 @@ class PDFReportView(APIView):
         p.save()
         buffer.seek(0)
 
-        return FileResponse(buffer, as_attachment=True, filename="report.pdf")
-
-@method_decorator(csrf_exempt, name="dispatch")
-class CSVUploadView(APIView):
-    def post(self, request):
-        ...
+        return FileResponse(
+            buffer,
+            as_attachment=True,
+            filename="chemical_equipment_report.pdf"
+        )
