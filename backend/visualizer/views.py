@@ -1,3 +1,5 @@
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 import pandas as pd
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -78,3 +80,8 @@ class PDFReportView(APIView):
         buffer.seek(0)
 
         return FileResponse(buffer, as_attachment=True, filename="report.pdf")
+
+@method_decorator(csrf_exempt, name="dispatch")
+class CSVUploadView(APIView):
+    def post(self, request):
+        ...
