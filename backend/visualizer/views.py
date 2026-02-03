@@ -13,10 +13,10 @@ from .models import Dataset
 
 
 # =========================
-# CSV UPLOAD API  (🔥 FIXED)
+# CSV UPLOAD API  (🔥 FULLY FIXED)
 # =========================
 class CSVUploadView(APIView):
-    authentication_classes = []   # 🔥 YAHI LINE 401 FIX KARTI HAI
+    authentication_classes = []   # 🔥 401 FIX
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -28,10 +28,31 @@ class CSVUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        df = pd.read_csv(file)
+        try:
+            df = pd.read_csv(file)
+        except Exception as e:
+            return Response(
+                {"error": "Unable to read CSV file", "details": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+        # 🔥 CSV SCHEMA VALIDATION (500 ERROR FIX)
+        required_columns = ["Flowrate", "Pressure", "Temperature", "Type"]
+        missing_columns = [c for c in required_columns if c not in df.columns]
+
+        if missing_columns:
+            return Response(
+                {
+                    "error": "Invalid CSV format",
+                    "missing_columns": missing_columns,
+                    "available_columns": list(df.columns)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 🔥 SAFE SUMMARY CALCULATION
         summary = {
-            "total_equipment": len(df),
+            "total_equipment": int(len(df)),
             "avg_flowrate": float(df["Flowrate"].mean()),
             "avg_pressure": float(df["Pressure"].mean()),
             "avg_temperature": float(df["Temperature"].mean()),
