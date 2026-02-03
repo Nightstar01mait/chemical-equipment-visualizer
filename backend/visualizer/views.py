@@ -1,12 +1,9 @@
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-
-import pandas as pd
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 
+import pandas as pd
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from django.http import FileResponse
@@ -16,10 +13,10 @@ from .models import Dataset
 
 
 # =========================
-# CSV UPLOAD API
+# CSV UPLOAD API  (🔥 FIXED)
 # =========================
-@method_decorator(csrf_exempt, name="dispatch")
 class CSVUploadView(APIView):
+    authentication_classes = []   # 🔥 YAHI LINE 401 FIX KARTI HAI
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -54,22 +51,21 @@ class CSVUploadView(APIView):
 
 
 # =========================
-# DATASET HISTORY API
+# HISTORY API
 # =========================
 class DatasetHistoryView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
         data = Dataset.objects.order_by("-uploaded_at")[:5]
-        response = [
+        return Response([
             {
                 "filename": d.filename,
                 "uploaded_at": d.uploaded_at,
                 "summary": d.summary
             }
             for d in data
-        ]
-        return Response(response)
+        ])
 
 
 # =========================
