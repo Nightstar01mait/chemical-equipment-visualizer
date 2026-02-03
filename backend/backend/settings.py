@@ -4,12 +4,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "dev-secret-key"
 
-DEBUG = False
+DEBUG = True   # 🔥 Local testing ke liye TRUE
 
 ALLOWED_HOSTS = ["*"]
 
 # =========================
-# APPS
+# INSTALLED APPS
 # =========================
 INSTALLED_APPS = [
     "django.contrib.auth",
@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_extensions",
 
     "rest_framework",
     "corsheaders",
@@ -24,18 +25,8 @@ INSTALLED_APPS = [
     "visualizer.apps.VisualizerConfig",
 ]
 
-REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
-    ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.SessionAuthentication",
-    ],
-}
-
-
 # =========================
-# 🔥 DRF – FORCE OPEN APIs
+# DRF – API ONLY (NO AUTH)
 # =========================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [],
@@ -43,7 +34,6 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
 }
-
 
 # =========================
 # MIDDLEWARE
@@ -53,12 +43,12 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    # ❌ REMOVE CSRF (API ONLY PROJECT)
+
+    # ❌ CSRF NOT NEEDED
     # "django.middleware.csrf.CsrfViewMiddleware",
 
-    # ❌ REMOVE AUTH MIDDLEWARE (ROOT CAUSE OF 401)
-    # "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # ✅ KEEP THIS (sessions need it)
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
 
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -77,7 +67,7 @@ ROOT_URLCONF = "backend.urls"
 WSGI_APPLICATION = "backend.wsgi.application"
 
 # =========================
-# TEMPLATES (ADMIN SAFE)
+# TEMPLATES
 # =========================
 TEMPLATES = [
     {
