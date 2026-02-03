@@ -13,7 +13,7 @@ from .models import Dataset
 
 
 # =========================
-# CSV UPLOAD API  (🔥 FULLY FIXED)
+# CSV UPLOAD API  (🔥 FINAL FIXED)
 # =========================
 class CSVUploadView(APIView):
     authentication_classes = []   # 🔥 401 FIX
@@ -28,15 +28,24 @@ class CSVUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # 🔥 ROBUST CSV READ (encoding + delimiter safe)
         try:
-            df = pd.read_csv(file)
+            df = pd.read_csv(
+                file,
+                encoding="utf-8",
+                sep=None,          # auto-detect comma / semicolon / tab
+                engine="python"
+            )
         except Exception as e:
             return Response(
-                {"error": "Unable to read CSV file", "details": str(e)},
+                {
+                    "error": "Unable to read CSV file",
+                    "details": str(e)
+                },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 🔥 CSV SCHEMA VALIDATION (500 ERROR FIX)
+        # 🔥 CSV SCHEMA VALIDATION
         required_columns = ["Flowrate", "Pressure", "Temperature", "Type"]
         missing_columns = [c for c in required_columns if c not in df.columns]
 
@@ -50,7 +59,11 @@ class CSVUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 🔥 SAFE SUMMARY CALCULATION
+        # 🔥 SAFE NUMERIC CONVERSION
+        for col in ["Flowrate", "Pressure", "Temperature"]:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+
+        # 🔥 SUMMARY
         summary = {
             "total_equipment": int(len(df)),
             "avg_flowrate": float(df["Flowrate"].mean()),
