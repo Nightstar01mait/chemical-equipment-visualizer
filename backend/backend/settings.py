@@ -24,6 +24,16 @@ INSTALLED_APPS = [
     "visualizer.apps.VisualizerConfig",
 ]
 
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+}
+
+
 # =========================
 # 🔥 DRF – FORCE OPEN APIs
 # =========================
@@ -42,7 +52,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     # ❌ REMOVE CSRF (API ONLY PROJECT)
     # "django.middleware.csrf.CsrfViewMiddleware",
 
